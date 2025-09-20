@@ -1,4 +1,4 @@
-import logger from "@logger";
+import logger from "@/lib/utils/logger";
 import { Redis } from "ioredis";
 
 export async function assertRedisIsHealthy(redis: Redis): Promise<void> {

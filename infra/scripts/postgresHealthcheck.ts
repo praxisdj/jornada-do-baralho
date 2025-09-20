@@ -1,5 +1,5 @@
-import prisma from "@lib/prisma";
-import logger from "@logger";
+import prisma from "@/lib/prisma";
+import logger from "@/lib/utils/logger";
 
 /**
  * Checks if the Prisma connection to the database is working.

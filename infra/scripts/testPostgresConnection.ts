@@ -1,12 +1,12 @@
 import prisma from "@/lib/prisma";
-import logger from "@logger";
+import logger from "@/lib/utils/logger";
 import { assertDatabaseIsHealthy } from "@infra/scripts/postgresHealthcheck";
 import { EnvConfigurationError } from "@/lib/utils/errors";
 
 try {
   if (!process.env.DATABASE_URL) {
     throw new EnvConfigurationError(
-      "DATABASE_URL environment variable is not set",
+      "DATABASE_URL environment variable is not set"
     );
   }
 

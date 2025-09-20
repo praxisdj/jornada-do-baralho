@@ -1,7 +1,7 @@
 import { EnvConfigurationError } from "@/lib/utils/errors";
 import { assertRedisIsHealthy } from "@infra/scripts/redisHealthcheck";
 import { Redis } from "ioredis";
-import logger from "@logger";
+import logger from "@/lib/utils/logger";
 
 let connection: Redis | undefined;
 
@@ -10,7 +10,7 @@ try {
 
   if (!redisUrl) {
     throw new EnvConfigurationError(
-      "REDIS_URL environment variable is not set",
+      "REDIS_URL environment variable is not set"
     );
   }
 
@@ -48,7 +48,7 @@ try {
 } catch (error) {
   logger.error(
     "Error connecting to Redis:",
-    error instanceof Error ? error.message : error,
+    error instanceof Error ? error.message : error
   );
 } finally {
   if (connection) {

@@ -26,6 +26,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchUserDetails = useCallback(async () => {
+    // Only run on client side
+    if (typeof window === "undefined") {
+      return;
+    }
+
     const userId = (session?.user as User)?.id;
 
     if (!userId) {
@@ -67,6 +72,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   // Fetch user details when session changes
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === "undefined") {
+      return;
+    }
+
     const userId = (session?.user as User)?.id;
     if (status === "authenticated" && userId) {
       fetchUserDetails();

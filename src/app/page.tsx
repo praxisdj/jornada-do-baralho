@@ -1,4 +1,12 @@
-import { CardDeckManager } from "@/components/card-deck-manager";
+import dynamic from "next/dynamic";
+
+const CardDeckManager = dynamic(
+  () =>
+    import("@/components/card-deck-manager").then((mod) => ({
+      default: mod.CardDeckManager,
+    })),
+  { ssr: false }
+);
 
 export default function Home() {
   return (
