@@ -1,0 +1,9 @@
+#!/bin/sh
+
+bun .husky/checkEnvFiles.ts
+
+bun .husky/checkEnvFilesSync.ts
+
+bun .husky/checkEnvLeaks.ts
+
+git diff --name-only master...HEAD | grep -E '\.(js|jsx|ts|tsx|json|css|md)$' | xargs bunx prettier --write
