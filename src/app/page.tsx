@@ -10,7 +10,7 @@ const CardDeckManager = dynamic(
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-background">
+    <main className="flex-1 bg-background">
       <CardDeckManager />
     </main>
   );
