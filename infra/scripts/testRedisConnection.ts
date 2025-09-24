@@ -10,7 +10,7 @@ try {
 
   if (!redisUrl) {
     throw new EnvConfigurationError(
-      "REDIS_URL environment variable is not set"
+      "REDIS_URL environment variable is not set",
     );
   }
 
@@ -48,7 +48,7 @@ try {
 } catch (error) {
   logger.error(
     "Error connecting to Redis:",
-    error instanceof Error ? error.message : error
+    error instanceof Error ? error.message : error,
   );
 } finally {
   if (connection) {

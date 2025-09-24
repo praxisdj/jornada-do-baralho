@@ -1,0 +1,268 @@
+# Cursor Rules for Jornada do Baralho
+
+## Project Overview
+
+This is a Next.js 14 application for managing Jovem Nerd card collections with authentication, user management, and card tracking features. The project uses TypeScript, Prisma, PostgreSQL, Redis, and follows modern React patterns.
+
+## Tech Stack
+
+- **Framework**: Next.js 14 with App Router
+- **Language**: TypeScript (strict mode)
+- **Runtime**: Bun (preferred over Node.js)
+- **Database**: PostgreSQL with Prisma ORM
+- **Cache**: Redis
+- **Authentication**: NextAuth.js with Google OAuth
+- **UI**: Tailwind CSS + shadcn/ui (New York style)
+- **Icons**: Lucide React
+- **Testing**: Bun test
+- **Deployment**: Vercel with Analytics
+
+## Code Style & Patterns
+
+### TypeScript
+
+- Use strict TypeScript with proper type definitions
+- Prefer `type` over `interface` for simple object shapes
+- Use Prisma-generated types: `Prisma.ModelNameGetPayload<object>`
+- Always define return types for functions
+- Use proper generic constraints and utility types
+- Prefer `const` assertions and `as const` for literal types
+
+### File Organization
+
+```
+src/
+├── app/                 # Next.js App Router pages and API routes
+├── components/          # React components
+│   ├── ui/             # shadcn/ui components
+│   └── [feature].tsx   # Feature-specific components
+├── contexts/           # React contexts
+├── lib/                # Utilities and configurations
+│   ├── utils/          # Utility functions
+│   └── [config].ts     # Configuration files
+├── services/           # Business logic services
+├── types/              # TypeScript type definitions
+└── tests/              # Test files
+```
+
+### Naming Conventions
+
+- **Files**: kebab-case for components (`card-deck-manager.tsx`)
+- **Components**: PascalCase (`CardDeckManager`)
+- **Functions/Variables**: camelCase (`getUserCards`)
+- **Constants**: UPPER_SNAKE_CASE (`API_BASE_URL`)
+- **Types**: PascalCase (`UserCard`, `CardStatus`)
+- **Database**: snake_case (Prisma handles this)
+
+### React Patterns
+
+- Use functional components with hooks
+- Prefer `"use client"` directive for client components
+- Use proper TypeScript for props: `Readonly<{ children: React.ReactNode }>`
+- Implement proper error boundaries and loading states
+- Use React.Suspense for async components
+- Prefer controlled components over uncontrolled
+
+### Component Structure
+
+```tsx
+"use client";
+
+import { useState, useEffect } from "react";
+import { ComponentProps } from "@/types/component.type";
+import { Button } from "@/components/ui/button";
+
+interface ComponentNameProps {
+  // Props definition
+}
+
+export function ComponentName({ prop1, prop2 }: ComponentNameProps) {
+  // Hooks
+  // State
+  // Effects
+  // Handlers
+  // Render
+}
+```
+
+### API Routes
+
+- Use `apiHandler` wrapper for error handling
+- Implement proper session validation with `validateSession()`
+- Use proper HTTP status codes
+- Follow RESTful conventions
+- Use Prisma for database operations
+
+```tsx
+import { NextRequest } from "next/server";
+import { apiHandler, validateSession } from "@/lib/utils/apiHandler";
+
+export const GET = apiHandler(async (request: NextRequest) => {
+  const session = await validateSession();
+  // Implementation
+});
+```
+
+### Database & Prisma
+
+- Use Prisma Client with proper error handling
+- Implement soft deletes with `deletedAt` field
+- Use proper indexes and constraints
+- Follow migration naming: `YYYYMMDDHHMMSS_description`
+- Use transactions for complex operations
+- Implement proper logging for database operations
+
+### Services Layer
+
+- Create service classes for business logic
+- Use dependency injection for Prisma client
+- Implement proper error handling and logging
+- Use Zod for input validation
+- Follow single responsibility principle
+
+```tsx
+export class ServiceName {
+  private prisma: typeof prisma;
+  private logger = createLogger();
+
+  constructor(prismaInstance?: typeof prisma) {
+    this.prisma = prismaInstance || prisma;
+  }
+
+  async methodName(params: ParamsType): Promise<ReturnType> {
+    this.logger.debug(`Method called with: ${JSON.stringify(params)}`);
+    // Implementation
+  }
+}
+```
+
+### Error Handling
+
+- Use custom `AppError` class for application errors
+- Implement proper error logging with Winston
+- Use different log levels: `debug`, `info`, `warn`, `error`
+- Include request metadata in error logs
+- Use proper HTTP status codes
+
+### Testing
+
+- Use Bun test framework
+- Write unit tests for services and utilities
+- Use `@faker-js/faker` for test data generation
+- Implement proper test setup and teardown
+- Use `describe` and `it` blocks with descriptive names
+- Test both success and error scenarios
+
+### Styling
+
+- Use Tailwind CSS with custom CSS variables
+- Follow shadcn/ui component patterns
+- Use `cn()` utility for conditional classes
+- Implement dark mode support
+- Use proper responsive design patterns
+- Prefer CSS variables over hardcoded values
+
+### Performance
+
+- Use proper React optimization (useMemo, useCallback)
+- Implement proper loading states
+- Use Next.js Image component for images
+- Implement proper caching strategies
+- Use Suspense for code splitting
+
+### Security
+
+- Validate all inputs with Zod schemas
+- Use proper session management
+- Implement CSRF protection
+- Sanitize user inputs
+- Use environment variables for secrets
+- Implement proper error handling to avoid information leakage
+
+### Environment & Configuration
+
+- Use proper environment variable validation
+- Implement different configurations for dev/staging/prod
+- Use Docker Compose for local development
+- Implement proper health checks
+- Use proper logging configuration
+
+## Specific Patterns
+
+### Context Usage
+
+```tsx
+// Create context with proper typing
+const ContextName = createContext<ContextType | undefined>(undefined);
+
+// Custom hook with error handling
+export function useContextName() {
+  const context = useContext(ContextName);
+  if (!context) {
+    throw new Error("useContextName must be used within ContextNameProvider");
+  }
+  return context;
+}
+```
+
+### Form Handling
+
+- Use React Hook Form with Zod validation
+- Implement proper error states
+- Use controlled components
+- Implement proper loading states
+
+### State Management
+
+- Use React Context for global state
+- Prefer local state over global when possible
+- Implement proper state updates
+- Use proper dependency arrays in useEffect
+
+### API Integration
+
+- Use proper error handling
+- Implement retry logic where appropriate
+- Use proper loading states
+- Implement proper caching
+
+## Code Quality
+
+- Use ESLint and Prettier
+- Implement proper TypeScript strict mode
+- Use proper import organization
+- Implement proper JSDoc comments for complex functions
+- Use meaningful variable and function names
+- Implement proper error messages
+
+## Git & Deployment
+
+- Use conventional commit messages
+- Implement proper CI/CD with Husky
+- Use proper branch protection
+- Implement proper environment variable management
+- Use proper database migration strategies
+
+## Performance Monitoring
+
+- Use Vercel Analytics
+- Implement proper error tracking
+- Use proper logging for performance monitoring
+- Implement proper caching strategies
+
+## Accessibility
+
+- Use proper ARIA labels
+- Implement proper keyboard navigation
+- Use proper color contrast
+- Implement proper focus management
+- Use semantic HTML elements
+
+## Internationalization
+
+- Use proper locale handling (pt-BR)
+- Implement proper date/time formatting
+- Use proper number formatting
+- Implement proper text direction support
+
+Remember: Always prioritize code readability, maintainability, and performance. Follow the established patterns in the codebase and maintain consistency across the project.

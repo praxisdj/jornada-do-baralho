@@ -10,12 +10,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trophy, Medal, Award, Star, TrendingUp } from "lucide-react";
+import { useMotion } from "@/contexts/MotionContext";
 
 interface LeaderboardProps {
   users: User[];
 }
 
 export function Leaderboard({ users }: LeaderboardProps) {
+  const { prefersReducedMotion } = useMotion();
+
   // Sort users by signed cards count in descending order
   const sortedUsers = [...users].sort((a, b) => b.signedCards - a.signedCards);
 
@@ -56,17 +59,62 @@ export function Leaderboard({ users }: LeaderboardProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-          <TrendingUp className="w-5 h-5 text-primary" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold">Ranking de Colecionadores</h2>
-          <p className="text-muted-foreground">
-            Quem tem mais cartas assinadas
-          </p>
-        </div>
+      {/* Stats Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-muted/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Trophy className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-lg font-bold">
+                  {sortedUsers[0]?.signedCards || 0}
+                </p>
+                <p className="text-xs text-muted-foreground">Maior pontuação</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-muted/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
+                <Star className="w-4 h-4 text-accent" />
+              </div>
+              <div>
+                <p className="text-lg font-bold">
+                  {sortedUsers.length > 0
+                    ? Math.round(
+                        sortedUsers.reduce(
+                          (acc, user) => acc + user.signedCards,
+                          0,
+                        ) / sortedUsers.length,
+                      )
+                    : 0}
+                </p>
+                <p className="text-xs text-muted-foreground">Média de cartas</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-muted/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-success/10 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-success" />
+              </div>
+              <div>
+                <p className="text-lg font-bold">{sortedUsers.length}</p>
+                <p className="text-xs text-muted-foreground">
+                  Colecionadores ativos
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Top 3 Podium */}
@@ -78,10 +126,12 @@ export function Leaderboard({ users }: LeaderboardProps) {
               key={user.id}
               className={`relative border-0 shadow-lg transition-all duration-300 hover:shadow-xl ${
                 position === 1
-                  ? "bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950/20 dark:to-yellow-900/20 md:scale-105"
+                  ? "bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950/20 dark:to-yellow-900/20"
                   : position === 2
                     ? "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950/20 dark:to-gray-900/20"
                     : "bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20"
+              } ${prefersReducedMotion ? "" : "hover:scale-[1.02]"} ${
+                position === 1 && !prefersReducedMotion ? "md:scale-105" : ""
               }`}
             >
               <CardContent className="p-6 text-center">
@@ -196,64 +246,6 @@ export function Leaderboard({ users }: LeaderboardProps) {
           </div>
         </CardContent>
       </Card>
-
-      {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-muted/20">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                <Trophy className="w-4 h-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-lg font-bold">
-                  {sortedUsers[0]?.signedCards || 0}
-                </p>
-                <p className="text-xs text-muted-foreground">Maior pontuação</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-muted/20">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
-                <Star className="w-4 h-4 text-accent" />
-              </div>
-              <div>
-                <p className="text-lg font-bold">
-                  {sortedUsers.length > 0
-                    ? Math.round(
-                        sortedUsers.reduce(
-                          (acc, user) => acc + user.signedCards,
-                          0,
-                        ) / sortedUsers.length,
-                      )
-                    : 0}
-                </p>
-                <p className="text-xs text-muted-foreground">Média de cartas</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-muted/20">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-success/10 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-4 h-4 text-success" />
-              </div>
-              <div>
-                <p className="text-lg font-bold">{sortedUsers.length}</p>
-                <p className="text-xs text-muted-foreground">
-                  Colecionadores ativos
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }

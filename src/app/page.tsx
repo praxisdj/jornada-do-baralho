@@ -5,7 +5,7 @@ const CardDeckManager = dynamic(
     import("@/components/card-deck-manager").then((mod) => ({
       default: mod.CardDeckManager,
     })),
-  { ssr: false }
+  { ssr: false },
 );
 
 export default function Home() {

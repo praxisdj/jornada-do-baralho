@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import type { CardStatus } from "@/types/card.type";
 import { useUser } from "@/contexts/UserContext";
+import { useMotion } from "@/contexts/MotionContext";
 import {
   Dialog,
   DialogContent,
@@ -47,6 +48,7 @@ export function CardDetailModal({
   onUpdate,
 }: CardDetailModalProps) {
   const { user, refetchUser } = useUser();
+  const { prefersReducedMotion } = useMotion();
   const [status, setStatus] = useState<CardStatus>("pending");
   const [comment, setComment] = useState("");
   const [signedDate, setSignedDate] = useState("");
@@ -57,7 +59,12 @@ export function CardDetailModal({
     if (userCard) {
       setStatus(userCard.status as CardStatus);
       setComment(userCard.comment || "");
-      setSignedDate(userCard.signedAt?.toISOString().split("T")[0] || "");
+      // Safely handle date conversion
+      if (userCard.signedAt && !isNaN(new Date(userCard.signedAt).getTime())) {
+        setSignedDate(new Date(userCard.signedAt).toISOString().split("T")[0]);
+      } else {
+        setSignedDate("");
+      }
     }
   }, [userCard]);
 
@@ -78,7 +85,12 @@ export function CardDetailModal({
         ...userCard,
         status: status === "signed" ? "SIGNED" : "PENDING",
         comment: comment.trim() || null,
-        signedAt: status === "signed" ? new Date(signedDate) : null,
+        signedAt:
+          status === "signed" &&
+          signedDate &&
+          !isNaN(new Date(signedDate).getTime())
+            ? new Date(signedDate)
+            : null,
       };
 
       // Call the PATCH API endpoint
@@ -113,10 +125,16 @@ export function CardDetailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className={`max-w-2xl max-h-[90vh] overflow-y-auto border-2 border-primary/20 shadow-2xl bg-card/95 backdrop-blur-md ${
+          prefersReducedMotion
+            ? ""
+            : "animate-in fade-in-0 zoom-in-95 duration-300"
+        }`}
+      >
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-balance">
-            Detalhes da Carta
+            Detalhes da Carta {userCard.card.title}
           </DialogTitle>
         </DialogHeader>
 
@@ -125,12 +143,12 @@ export function CardDetailModal({
           <div className="space-y-4">
             <CardUI className="border-0 shadow-sm bg-gradient-to-br from-card to-muted/10">
               <CardContent className="p-0">
-                <div className="relative aspect-[2.5/3.5] overflow-hidden rounded-lg bg-gradient-to-br from-muted/20 to-muted/40">
+                <div className="relative aspect-[652/1020] overflow-hidden rounded-lg bg-gradient-to-br from-muted/20 to-muted/40">
                   <Image
                     src={userCard.card.imageUrl || "/placeholder.svg"}
                     alt={userCard.card.title}
                     fill
-                    className="object-cover"
+                    className="object-contain"
                   />
 
                   {/* Status Badge */}
@@ -139,9 +157,9 @@ export function CardDetailModal({
                       variant={status === "signed" ? "default" : "secondary"}
                       className={`${
                         status === "signed"
-                          ? "bg-success text-success-foreground"
-                          : "bg-warning text-warning-foreground"
-                      } shadow-sm`}
+                          ? "bg-green-500/90 text-white border-green-400/50"
+                          : "bg-orange-500/90 text-white border-orange-400/50"
+                      } shadow-lg backdrop-blur-sm`}
                     >
                       {status === "signed" ? (
                         <CheckCircle className="w-3 h-3 mr-1" />
@@ -229,7 +247,13 @@ export function CardDetailModal({
                 <Save className="w-4 h-4 mr-2" />
                 {isSaving ? "Salvando..." : "Salvar Alterações"}
               </Button>
-              <Button variant="outline" onClick={onClose} disabled={isSaving}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  onClose();
+                }}
+                disabled={isSaving}
+              >
                 Cancelar
               </Button>
             </div>
