@@ -3,7 +3,15 @@
 import { Card as CardUI, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Clock, Eye, Sparkles, Heart, Star } from "lucide-react";
+import {
+  CheckCircle,
+  Clock,
+  Eye,
+  Sparkles,
+  Heart,
+  Star,
+  LogIn,
+} from "lucide-react";
 import { useMotion } from "@/contexts/MotionContext";
 import Image from "next/image";
 import type { Card } from "@/types/card.type";
@@ -19,9 +27,10 @@ interface DisplayCard extends Card {
 interface CardGridProps {
   cards: DisplayCard[];
   onCardClick: (card: DisplayCard) => void;
+  onLoginClick?: () => void;
 }
 
-export function CardGrid({ cards, onCardClick }: CardGridProps) {
+export function CardGrid({ cards, onCardClick, onLoginClick }: CardGridProps) {
   const { prefersReducedMotion } = useMotion();
 
   // Empty state component
@@ -48,6 +57,12 @@ export function CardGrid({ cards, onCardClick }: CardGridProps) {
               começar sua jornada!
             </p>
           </div>
+          {onLoginClick && (
+            <Button onClick={onLoginClick} className="mt-4">
+              <LogIn className="w-4 h-4 mr-2" />
+              Entrar com Google
+            </Button>
+          )}
         </div>
       </div>
     );

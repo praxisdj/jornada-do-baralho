@@ -49,7 +49,8 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, profile }: { user: any; profile?: any }) {
       if (!user?.email) return false;
 
-      console.log("Profile:", profile);
+      console.log("🤓 Profile:", profile);
+      console.log("🤓 User:", user);
 
       const currentUser = await userService.findUser({ email: user.email });
       if (currentUser) {

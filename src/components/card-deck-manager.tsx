@@ -1,17 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signIn, signOut } from "next-auth/react";
 import { useUser } from "@/contexts/UserContext";
 import { useMotion } from "@/contexts/MotionContext";
 import { Card as CardUI, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CardGrid } from "@/components/card-grid";
 import { Leaderboard } from "@/components/leaderboard";
 import { CardDetailModal } from "@/components/card-detail-modal";
-import { LoginButton } from "@/components/login-button";
+import { LoginModal } from "@/components/login-modal";
 import { SuccessToast } from "@/components/success-toast";
-import { Trophy, Users, Star, TrendingUp, Loader2, Filter } from "lucide-react";
+import {
+  Trophy,
+  Users,
+  Star,
+  TrendingUp,
+  Loader2,
+  Filter,
+  LogOut,
+  LogIn,
+} from "lucide-react";
 import Image from "next/image";
 import type { User } from "@/types/user.type";
 import type { Card } from "@/types/card.type";
@@ -39,13 +49,17 @@ export function CardDeckManager() {
   const { user, isLoading: userLoading, error: userError } = useUser();
   const { prefersReducedMotion } = useMotion();
   const [cards, setCards] = useState<DisplayCard[]>([]);
+  const [allCards, setAllCards] = useState<DisplayCard[]>([]);
   const [leaderboardUsers, setLeaderboardUsers] = useState<LeaderboardUser[]>(
-    [],
+    []
   );
   const [isClient, setIsClient] = useState(false);
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true);
   const [selectedCard, setSelectedCard] = useState<DisplayCard | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [selectedCardForLogin, setSelectedCardForLogin] =
+    useState<DisplayCard | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -71,7 +85,7 @@ export function CardDeckManager() {
             ? new Date(userCard.signedAt).toISOString().split("T")[0]
             : undefined,
           userCardId: userCard.id, // Add the actual userCard ID
-        }),
+        })
       );
       setCards(transformedCards);
       setIsLoading(false);
@@ -90,6 +104,46 @@ export function CardDeckManager() {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Fetch all cards when user is not authenticated
+  useEffect(() => {
+    if (!isClient) return;
+
+    const fetchAllCards = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch("/api/card");
+        if (!response.ok) {
+          throw new Error(`Failed to fetch cards: ${response.statusText}`);
+        }
+        const cardsData = await response.json();
+
+        // Transform cards to display format with pending status for non-authenticated users
+        const transformedCards: DisplayCard[] = cardsData.map((card: Card) => ({
+          id: card.id,
+          code: card.code,
+          title: card.title,
+          description: card.description,
+          imageUrl: card.imageUrl,
+          createdAt: card.createdAt,
+          updatedAt: card.updatedAt,
+          status: "pending" as CardStatus, // All cards show as pending for non-authenticated users
+        }));
+
+        setAllCards(transformedCards);
+      } catch (err) {
+        console.error("Error fetching all cards:", err);
+        setAllCards([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Only fetch all cards if user is not authenticated
+    if (status === "unauthenticated") {
+      fetchAllCards();
+    }
+  }, [isClient, status]);
 
   // Fetch leaderboard users
   useEffect(() => {
@@ -126,18 +180,20 @@ export function CardDeckManager() {
     fetchLeaderboardUsers();
   }, [isClient]);
 
-  const signedCards = cards.filter((card) => card.status === "signed");
-  const pendingCards = cards.filter((card) => card.status === "pending");
+  // Use different card sets based on authentication status
+  const displayCards = session ? cards : allCards;
+  const signedCards = displayCards.filter((card) => card.status === "signed");
+  const pendingCards = displayCards.filter((card) => card.status === "pending");
 
   // Filter cards based on selected status
   const filteredCards =
     statusFilter === "all"
-      ? cards
-      : cards.filter((card) => card.status === statusFilter);
+      ? displayCards
+      : displayCards.filter((card) => card.status === statusFilter);
 
   const updateCard = (updatedCard: DisplayCard) => {
     setCards((prev) =>
-      prev.map((card) => (card.id === updatedCard.id ? updatedCard : card)),
+      prev.map((card) => (card.id === updatedCard.id ? updatedCard : card))
     );
 
     // Show success toast
@@ -164,6 +220,21 @@ export function CardDeckManager() {
     if (activeTab !== "collection") {
       setActiveTab("collection");
     }
+  };
+
+  const handleLogin = () => {
+    setIsLoginModalOpen(false);
+    setSelectedCardForLogin(null);
+    signIn("google", { callbackUrl: "/" });
+  };
+
+  const handleCardClickForLogin = (card: DisplayCard) => {
+    setSelectedCardForLogin(card);
+    setIsLoginModalOpen(true);
+  };
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/" });
   };
 
   // Loading state - only show if we're authenticated and loading
@@ -287,6 +358,26 @@ export function CardDeckManager() {
                 assinaturas
               </p>
             </div>
+            {session ? (
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                Sair
+              </Button>
+            ) : (
+              <Button
+                onClick={handleLogin}
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <LogIn className="w-4 h-4" />
+                Entrar
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -439,7 +530,7 @@ export function CardDeckManager() {
                           <div>
                             <p className="text-2xl font-bold text-foreground">
                               {Math.round(
-                                (signedCards.length / cards.length) * 100,
+                                (signedCards.length / cards.length) * 100
                               )}
                               %
                             </p>
@@ -500,12 +591,154 @@ export function CardDeckManager() {
                   />
                 </>
               ) : (
-                <LoginButton />
+                <>
+                  {/* Stats Grid for non-authenticated users */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                    <CardUI className="bg-card border-border hover:bg-accent/50 transition-colors">
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-lg bg-yellow-400/10 flex items-center justify-center">
+                            <Star className="w-6 h-6 text-yellow-400" />
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-foreground">
+                              {signedCards.length}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Cartas Assinadas
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </CardUI>
+
+                    <CardUI className="bg-card border-border hover:bg-accent/50 transition-colors">
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center">
+                            <Users className="w-6 h-6 text-blue-400" />
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-foreground">
+                              {pendingCards.length}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Pendentes
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </CardUI>
+
+                    <CardUI className="bg-card border-border hover:bg-accent/50 transition-colors">
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-lg bg-purple-400/10 flex items-center justify-center">
+                            <Trophy className="w-6 h-6 text-purple-400" />
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-foreground">
+                              {displayCards.length}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Total de Cartas
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </CardUI>
+
+                    <CardUI className="bg-card border-border hover:bg-accent/50 transition-colors">
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-lg bg-green-400/10 flex items-center justify-center">
+                            <TrendingUp className="w-6 h-6 text-green-400" />
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-foreground">
+                              {displayCards.length > 0
+                                ? Math.round(
+                                    (signedCards.length / displayCards.length) *
+                                      100
+                                  )
+                                : 0}
+                              %
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Progresso
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </CardUI>
+                  </div>
+
+                  {/* Status Filter */}
+                  <div className="mb-8">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="flex items-center gap-2">
+                        <Filter className="w-5 h-5 text-muted-foreground" />
+                        <h3 className="text-lg font-semibold text-foreground">
+                          Filtrar por Status
+                        </h3>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        onClick={() => handleStatusFilterChange("all")}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          statusFilter === "all"
+                            ? "bg-primary text-primary-foreground shadow-md"
+                            : "bg-card border border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        }`}
+                      >
+                        Todas ({displayCards.length})
+                      </button>
+                      <button
+                        onClick={() => handleStatusFilterChange("signed")}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          statusFilter === "signed"
+                            ? "bg-green-500 text-white shadow-md"
+                            : "bg-card border border-border text-muted-foreground hover:bg-green-500/10 hover:text-green-600"
+                        }`}
+                      >
+                        Assinadas ({signedCards.length})
+                      </button>
+                      <button
+                        onClick={() => handleStatusFilterChange("pending")}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          statusFilter === "pending"
+                            ? "bg-orange-500 text-white shadow-md"
+                            : "bg-card border border-border text-muted-foreground hover:bg-orange-500/10 hover:text-orange-600"
+                        }`}
+                      >
+                        Pendentes ({pendingCards.length})
+                      </button>
+                    </div>
+                  </div>
+
+                  <CardGrid
+                    cards={filteredCards}
+                    onCardClick={handleCardClickForLogin}
+                    onLoginClick={handleLogin}
+                  />
+                </>
               )}
             </div>
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => {
+          setIsLoginModalOpen(false);
+          setSelectedCardForLogin(null);
+        }}
+        onLogin={handleLogin}
+        cardTitle={selectedCardForLogin?.title}
+      />
 
       {/* Card Detail Modal */}
       <CardDetailModal
