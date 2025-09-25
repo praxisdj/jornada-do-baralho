@@ -720,7 +720,6 @@ export function CardDeckManager() {
                   <CardGrid
                     cards={filteredCards}
                     onCardClick={handleCardClickForLogin}
-                    onLoginClick={handleLogin}
                   />
                 </>
               )}
