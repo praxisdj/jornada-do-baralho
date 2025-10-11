@@ -23,7 +23,6 @@ export const metadata: Metadata = {
   title: "Jovem Nerd - Jornada do Baralho",
   description:
     "Gerencie sua coleção de cartas do Jovem Nerd e acompanhe assinaturas",
-  generator: "v0.app",
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",

@@ -36,11 +36,18 @@ export class UserService {
     return newUser;
   }
 
-  async findUsers(filters?: Prisma.UserWhereInput): Promise<User[]> {
+  async findUsers(filters?: Prisma.UserWhereInput): Promise<Partial<User>[]> {
     logger.debug(`Fetching users with filters: ${JSON.stringify(filters)}`);
+
     const users = await this.prisma.user.findMany({
       where: filters,
-      include: {
+      select: {
+        id: true,
+        name: true,
+        image: true,
+        createdAt: true,
+        updatedAt: true,
+        deletedAt: true,
         userCards: {
           include: {
             card: true,
@@ -48,11 +55,13 @@ export class UserService {
         },
       },
     });
+
     return users.length > 0 ? users : [];
   }
 
   async findUser(filters?: Prisma.UserWhereInput): Promise<User | null> {
     logger.debug(`Fetching user with filters: ${JSON.stringify(filters)}`);
+
     const user = await this.prisma.user.findFirst({
       where: filters,
       include: {

@@ -51,7 +51,7 @@ export function CardDeckManager() {
   const [cards, setCards] = useState<DisplayCard[]>([]);
   const [allCards, setAllCards] = useState<DisplayCard[]>([]);
   const [leaderboardUsers, setLeaderboardUsers] = useState<LeaderboardUser[]>(
-    []
+    [],
   );
   const [isClient, setIsClient] = useState(false);
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true);
@@ -85,7 +85,7 @@ export function CardDeckManager() {
             ? new Date(userCard.signedAt).toISOString().split("T")[0]
             : undefined,
           userCardId: userCard.id, // Add the actual userCard ID
-        })
+        }),
       );
       setCards(transformedCards);
       setIsLoading(false);
@@ -193,7 +193,7 @@ export function CardDeckManager() {
 
   const updateCard = (updatedCard: DisplayCard) => {
     setCards((prev) =>
-      prev.map((card) => (card.id === updatedCard.id ? updatedCard : card))
+      prev.map((card) => (card.id === updatedCard.id ? updatedCard : card)),
     );
 
     // Show success toast
@@ -530,7 +530,7 @@ export function CardDeckManager() {
                           <div>
                             <p className="text-2xl font-bold text-foreground">
                               {Math.round(
-                                (signedCards.length / cards.length) * 100
+                                (signedCards.length / cards.length) * 100,
                               )}
                               %
                             </p>
@@ -659,7 +659,7 @@ export function CardDeckManager() {
                               {displayCards.length > 0
                                 ? Math.round(
                                     (signedCards.length / displayCards.length) *
-                                      100
+                                      100,
                                   )
                                 : 0}
                               %

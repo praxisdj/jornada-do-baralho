@@ -1,12 +1,12 @@
 import { describe, expect, test, beforeEach } from "bun:test";
 import { GET } from "@/app/api/user/[id]/route";
-import { clearDatabase, createUser, createMultipleUsers } from "@tests/utils";
+import { setupTests, createUser, createMultipleUsers } from "@tests/utils";
 import { User } from "@/types/user.type";
 import { NextRequest } from "next/server";
 
 describe("GET /api/user/[id]", () => {
   beforeEach(async () => {
-    await clearDatabase();
+    await setupTests();
   });
 
   test("should return user by id", async () => {

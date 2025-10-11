@@ -28,6 +28,15 @@ export function Footer() {
             >
               Djonathan Krause
             </Link>
+            <span className="text-muted-foreground">•</span>
+            <Link
+              href="https://www.jornadadobaralho.com.br/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Jornada do Baralho, por César Hoffmann
+            </Link>
           </div>
         </div>
       </div>
